@@ -9,12 +9,13 @@
 import Cocoa
 import ScreenSaver
 
+
 class TimesaverView: ScreenSaverView
 {
 	var configurationWindowController: VLNConfigurationWindowController;
 	var configuration: VLNConfiguration;
 	
-	init(frame: NSRect, isPreview: Bool)
+	override init(frame: NSRect, isPreview: Bool)
 	{
 		self.configuration = VLNConfiguration();
 		self.configurationWindowController = VLNConfigurationWindowController(configuration: self.configuration);
@@ -24,6 +25,10 @@ class TimesaverView: ScreenSaverView
 		NSNotificationCenter.defaultCenter().addObserver(self, selector: "configurationChanged", name: VLNScreenSaverDefaultsChangedNotification, object: nil);
 		
 		self.setAnimationTimeInterval(1/30.0);
+	}
+
+	required init?(coder: NSCoder) {
+	    fatalError("init(coder:) has not been implemented")
 	}
 	
 	deinit
@@ -65,7 +70,7 @@ class TimesaverView: ScreenSaverView
 	
 	override func drawRect(rect: NSRect)
 	{
-		var contextPointer: COpaquePointer = NSGraphicsContext.currentContext().graphicsPort();
+		var contextPointer: COpaquePointer = NSGraphicsContext?.currentContext().graphicsPort;
 		var context: CGContextRef = Unmanaged.fromOpaque(contextPointer).takeUnretainedValue()
 		
 		var backgroundColor = self.configuration.backgroundColor.color();
@@ -79,15 +84,15 @@ class TimesaverView: ScreenSaverView
 		self.drawTicks(clockFrame, context:context);
 		
 		// Clock hands
-		var date: NSDate = NSDate.date();
+		var date: NSDate = NSDate();
 		
-		var hours: CGFloat = date.hoursAgo();
+		var hours: CGFloat = CGFloat(date.hoursAgo());
 		self.drawClockHand(clockFrame, context:context, size:0.6, progress:hours * 12, total:12);
 		
-		var minutes: CGFloat = date.minutesAgo();
+		var minutes: CGFloat = CGFloat(date.minutesAgo());
 		self.drawClockHand(clockFrame, context:context, size:0.9, progress:minutes * 60, total:60);
 		
-		var seconds: CGFloat = date.secondsAgo();
+		var seconds: CGFloat = CGFloat(date.secondsAgo());
 		self.drawClockHand(clockFrame, context:context, size:1.0, progress:seconds * 60, total:60);
 	}
 	
@@ -104,8 +109,8 @@ class TimesaverView: ScreenSaverView
 		var radius: CGFloat = CGRectGetWidth(rect) / 2 - (self.clockRadiusInRect(rect) * 2);
 		var center: CGPoint = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
 		
-		var hourWidth: Double = self.tickSizeInRect(rect);
-		var minuteWidth: Double = self.tickSizeInRect(rect) * 0.5;
+		var hourWidth: Double = Double(self.tickSizeInRect(rect));
+		var minuteWidth: Double = Double(self.tickSizeInRect(rect)) * 0.5;
 		var width: Double;
 		
 		var time:Double = 12;
@@ -124,8 +129,8 @@ class TimesaverView: ScreenSaverView
 				width = minuteWidth;
 			}
 			
-			var x2: CGFloat = center.x + (cos(angle) * (radius - width));
-			var y2: CGFloat = center.y + (sin(angle) * (radius - width));
+			var x2: CGFloat = center.x + (cos(angle) * (radius - CGFloat(width)));
+			var y2: CGFloat = center.y + (sin(angle) * (radius - CGFloat(width)));
 			
 			CGContextBeginPath(context);
 			CGContextMoveToPoint(context, x, y);
@@ -165,7 +170,7 @@ class TimesaverView: ScreenSaverView
 		
 		var sizeHeight: CGFloat = self.clockHandHeightInRect(rect) * size;
 		
-		var angle: CGFloat = self.angleForTimeUnit(progress, total: total);
+		var angle: CGFloat = self.angleForTimeUnit(CDouble(progress), total: CDouble(total));
 		var x: CGFloat = center.x + (cos(angle) * sizeHeight);
 		var y: CGFloat = center.y + (sin(angle) * sizeHeight);
 		var point: CGPoint = CGPointMake(x, y);
@@ -233,6 +238,6 @@ class TimesaverView: ScreenSaverView
 		var radians: CDouble = (degreesPerTime * M_PI) / 180;
 		var angle: CDouble = -(radians * time - M_PI_2);
 		
-		return angle;
+		return CGFloat(angle);
 	}
 }
